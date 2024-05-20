@@ -75,7 +75,7 @@ ggplot(Spotify, aes(x = "", fill = as.factor(Year_Released))) +
   theme_void()
 
 # Histogram: Distribution of song durations
-ggplot(Spotify, aes(x = Beat_Per_Minute/60000)) +
+ggplot(Spotify, aes(x = Beats_Per_Minute/60000)) +
   geom_histogram(binwidth = 0.5, fill = "lightcoral", color = "black") +
   labs(title = "Distribution of Song Durations", x = "Duration (minutes)", y = "Frequency") +
   theme_minimal()
@@ -87,7 +87,7 @@ ggplot(Spotify, aes(x = Danceability, y = Popularity)) +
   theme_minimal()
 
 # Box Plot: Distribution of tempo by genre
-ggplot(Spotify, aes(x = Top_Genre, y = Beat_Per_Minute, fill = Top_Genre)) +
+ggplot(Spotify, aes(x = Top_Genre, y = Beats_Per_Minute, fill = Top_Genre)) +
   geom_boxplot() +
   labs(title = "Distribution of Tempo by Genre", x = "Genre", y = "Tempo") +
   theme_minimal() +
@@ -100,5 +100,15 @@ ggplot(Spotify, aes(x = Year_Released, y = Energy)) +
   labs(title = "Trend of Energy Over the Years", x = "Year", y = "Mean Energy") +
   theme_minimal()
 
+# Sort the songs by Danceability and Rnergy
+top_songs <- Spotify[order(-Song_Title$Danceability, -Song_Title$Energy), ]
+# Take the top 10 songs
+top_10 <- top_songs[1:10, ]
+# Plot the scatter plot
+ggplot(top_songs, aes(x = Danceability, y = Rnergy, label = Song_Title)) +
+  geom_point(color = "blue") +
+  geom_text_repel() +  # Add text labels with geom_text_repel for better label placement
+  labs(Song_Title = "Top 10 Songs with Highest Danceability and Energy",
+       x = "Danceability", y = "Energy")
 
 

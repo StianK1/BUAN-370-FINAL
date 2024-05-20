@@ -111,4 +111,29 @@ ggplot(top_songs, aes(x = Danceability, y = Rnergy, label = Song_Title)) +
   labs(Song_Title = "Top 10 Songs with Highest Danceability and Energy",
        x = "Danceability", y = "Energy")
 
+# Find the correlation of the variables
+data <- data.frame("Beats_Per_Minute", "Energy", "Danceability", "Decibel_Meter", "Duration")
+
+cm <- cor(data, use = "complete.obs")
+
+print(cm)
+
+# Create the heatmap (let me know if this runs for you, it wasnt running for me)
+heatmap(cm, 
+        Rowv = NA, 
+        Colv = NA, 
+        col = colorRampPalette(c("blue", "white", "red"))(20), 
+        xlab = "Variables", 
+        ylab = "Variables", 
+        main = "Correlation Heatmap")
+
+correlation_Area <- cor(Energy, Danceability)
+correlation_Area
+
+correlation_bath <- cor(Energy, Danceability)
+correlation_bath
+
+correlation_stories <- cor(Energy, Danceability)
+correlation_stories
+
 

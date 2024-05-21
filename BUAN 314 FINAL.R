@@ -61,6 +61,25 @@ colnames(Spotify)[colnames(Spotify)=="artist type"] <- "Artist_Type"
 #Make Sure the Column Renaming was successful
 colnames(Spotify)
 
+# Bar Chart: Distribution of songs by genre
+ggplot(Spotify, aes(x = Top_Genre)) +
+  geom_bar(fill = "skyblue") +
+  theme_minimal() +
+  labs(title = "Distribution of Songs by Top_Genre", x = "Top_Genre", y = "Count") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+# Pie Chart: Proportion of songs released each year
+ggplot(Spotify, aes(x = "", fill = as.factor(Year_Released))) +
+  geom_bar(width = 1) +
+  coord_polar(theta = "y") +
+  labs(title = "Proportion of Songs Released Each Year", fill = "Year") +
+  theme_void()
+
+# Histogram: Distribution of song durations
+ggplot(Spotify, aes(x = Beats_Per_Minute/60000)) +
+  geom_histogram(binwidth = 0.5, fill = "lightcoral", color = "black") +
+  labs(title = "Distribution of Song Durations", x = "Duration (minutes)", y = "Frequency") +
+  theme_minimal()
 
 # Scatter Plot: Relationship between danceability and popularity
 ggplot(Spotify, aes(x = Danceability, y = Popularity)) +
@@ -68,6 +87,55 @@ ggplot(Spotify, aes(x = Danceability, y = Popularity)) +
   labs(title = "Relationship between Danceability and Popularity", x = "Danceability", y = "Popularity") +
   theme_minimal()
 
+# Box Plot: Distribution of tempo by genre
+ggplot(Spotify, aes(x = Top_Genre, y = Beats_Per_Minute, fill = Top_Genre)) +
+  geom_boxplot() +
+  labs(title = "Distribution of Tempo by Genre", x = "Genre", y = "Tempo") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+# Line Plot: Trend of energy over the years
+ggplot(Spotify, aes(x = Year_Released, y = Energy)) +
+  geom_line(color = "green") +
+  geom_point(color = "green") +
+  labs(title = "Trend of Energy Over the Years", x = "Year", y = "Mean Energy") +
+  theme_minimal()
+
+# Sort the songs by Danceability and Rnergy
+top_songs <- Spotify[order(-Song_Title$Danceability, -Song_Title$Energy), ]
+# Take the top 10 songs
+top_10 <- top_songs[1:10, ]
+# Plot the scatter plot
+ggplot(top_songs, aes(x = Danceability, y = Rnergy, label = Song_Title)) +
+  geom_point(color = "blue") +
+  geom_text_repel() +  # Add text labels with geom_text_repel for better label placement
+  labs(Song_Title = "Top 10 Songs with Highest Danceability and Energy",
+       x = "Danceability", y = "Energy")
+
+# Find the correlation of the variables
+data <- data.frame("Beats_Per_Minute", "Energy", "Danceability", "Decibel_Meter", "Duration")
+
+cm <- cor(data, use = "complete.obs")
+
+print(cm)
+
+# Create the heatmap (let me know if this runs for you, it wasnt running for me)
+heatmap(cm, 
+        Rowv = NA, 
+        Colv = NA, 
+        col = colorRampPalette(c("blue", "white", "red"))(20), 
+        xlab = "Variables", 
+        ylab = "Variables", 
+        main = "Correlation Heatmap")
+
+correlation_Area <- cor(Energy, Danceability)
+correlation_Area
+
+correlation_bath <- cor(Energy, Danceability)
+correlation_bath
+
+correlation_stories <- cor(Energy, Danceability)
+correlation_stories
 
 ##Average Popularity Throught The Years##
 
@@ -133,3 +201,61 @@ Avg_Music_Popularity <-data.frame(Music_Genres, AMP)
 ggplot(Avg_Music_Popularity, aes(x = Music_Genres, y = AMP, fill = Music_Genres)) +
   geom_bar(stat = 'identity') +
   labs(y ="Average Music Popularity")
+
+View(Spotify)
+##Query 1 - Seeing if there is a recognizable pattern Between Release Year and Average BPM of Songs Did they go Up or down
+
+Query1 <- sqldf("SELECT Year_Released, AVG(Beats_Per_Minute) as Avg_BPM
+                FROM Spotify
+                GROUP BY Year_Released
+                ORDER BY Year_Released ASC")
+View(Query1)
+
+## QUERY2 - Who are the most popular Artists??##
+
+Query2 <- sqldf("SELECT Artist_Name, 
+                SUM(Popularity) AS Popularity_Total, 
+                COUNT(Song_Title) as Number_Of_Songs, 
+                AVG(Popularity) as Avg_Popularity_per_Song,
+                Artist_Type
+                FROM Spotify
+                GROUP BY Artist_Name
+                ORDER BY Popularity_Total DESC")
+View(Query2)
+
+## Query3 - Who Are the top 50 Biggest On Hit Wonders? ##
+
+Query3 <- sqldf("SELECT Song_Title,
+                Artist_Name,
+                Popularity
+                FROM Spotify
+                GROUP BY Artist_Name
+                HAVING COUNT(Song_Title) = 1
+                ORDER BY Popularity DESC
+                LIMIT 50;")
+View(Query3)
+
+##QUERY4 Teamwork makes the dream work!! Who are the best DUO/TRIO/Bands that make the Best Music##
+
+Query4 <- sqldf("SELECT
+                Artist_Name,
+                AVG(Popularity) AS Avg_Music_Popularity,
+                Artist_Type
+                FROM Spotify
+                WHERE Artist_Type NOT LIKE '%Solo%'
+                GROUP BY Artist_Name
+                ORDER BY Avg_Music_Popularity DESC")
+View(Query4)
+
+##QUERY 5 - PARTY TIME! Parties last Roughly 4 Hours Which is 14400/2 min per song = 120 songs seconds. What songs have the best Energy and Dancability combo for my Playlist!##
+
+Query5 <- sqldf("SELECT
+                DISTINCT Song_Title,
+                Artist_Name,
+                Top_Genre,
+                Duration,
+                Energy + Danceability AS Rage_Score
+                FROM Spotify
+                ORDER BY Rage_Score DESC
+                Limit 120;")
+View(Query5)

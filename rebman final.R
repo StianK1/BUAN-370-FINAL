@@ -40,4 +40,43 @@ ggplot(spotify_data, aes(x = `artist type`, y = pop, fill = `artist type`)) +
        y = "Popularity") +
   theme_minimal()
 
+if (!require(gridExtra)) {
+  install.packages("gridExtra")
+  library(gridExtra)
+}
 
+# Load necessary libraries
+library(ggplot2)
+library(dplyr)
+library(readxl)
+data <- spotify_data
+# Aggregate data by artist type and year
+artist_type_counts <- data %>%
+  count(`year released`, `artist type`)
+
+# Create a list to store plots
+plots <- list()
+
+# Loop through each year to create pie charts
+years <- c(2016, 2017, 2018, 2019)
+for (year in years) {
+  year_data <- artist_type_counts %>%
+    filter(`year released` == year)
+  
+  p <- ggplot(year_data, aes(x = "", y = n, fill = `artist type`)) +
+    geom_bar(stat = "identity", width = 1) +
+    coord_polar("y") +
+    labs(title = paste("Artist Type Popularity in", year),
+         x = "",
+         y = "",
+         fill = "Artist Type") +
+    theme_void() +
+    theme(legend.position = "right")
+  
+  # Add the plot to the list
+  plots[[as.character(year)]] <- p
+}
+# Arrange and print all four pie charts in a single plot
+grid.arrange(grobs = plots, ncol = 2)
+
+  
